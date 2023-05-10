@@ -21,11 +21,19 @@
 use crossbeam_channel::{self, Receiver, Sender};
 use std::collections::VecDeque;
 use std::env;
+#[cfg(not(target_vendor = "teaclave"))]
 use std::fs::File;
+// Logger is disbaled in teaclave, use the untrusted fs for compilation
 use std::io::{self, BufWriter, Write};
+#[cfg(target_vendor = "teaclave")]
+use std::untrusted::fs::File;
 
 /// True if logs are compiled in.
-pub(super) const LOG_ENABLED: bool = cfg!(any(rayon_rs_log, debug_assertions));
+pub(super) const LOG_ENABLED: bool = cfg!(any(
+    rayon_rs_log,
+    debug_assertions,
+    target_vendor = "teaclave"
+));
 
 #[derive(Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Debug)]
 pub(super) enum Event {
